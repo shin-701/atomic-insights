@@ -147,9 +147,21 @@ export class RelatedNotesView {
             topResults.forEach(res => {
                 const item = listContainer.createDiv({ cls: 'atomic-insights-item' });
 
-                const displayName = this.plugin.settings.showFolderNames
-                    ? res.path.replace('.md', '')
-                    : res.path.split('/').pop()?.replace('.md', '') ?? res.path;
+                // Try to get title from YAML frontmatter first
+                let displayName: string;
+                const targetFileForTitle = this.plugin.app.metadataCache.getFirstLinkpathDest(res.path, file.path);
+                const cacheForTitle = targetFileForTitle ? this.plugin.app.metadataCache.getFileCache(targetFileForTitle) : null;
+                const titleFromYaml = cacheForTitle?.frontmatter?.title;
+
+                if (titleFromYaml) {
+                    // Use title from YAML frontmatter
+                    displayName = titleFromYaml;
+                } else {
+                    // Fallback to existing logic (filename-based)
+                    displayName = this.plugin.settings.showFolderNames
+                        ? res.path.replace('.md', '')
+                        : res.path.split('/').pop()?.replace('.md', '') ?? res.path;
+                }
 
                 // --- Calculate Icon / Direction FIRST ---
                 const resolvedLinks = this.plugin.app.metadataCache.resolvedLinks;
