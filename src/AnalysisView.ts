@@ -139,9 +139,20 @@ export class AtomicInsightsView extends ItemView {
             // but we can resolve using app.metadataCache if needed.
             // For dragging, we need the target file (res.path).
 
-            const displayName = this.plugin.settings.showFolderNames
-                ? res.path.replace('.md', '')
-                : res.path.split('/').pop()?.replace('.md', '') ?? res.path;
+            // Try to get title from YAML frontmatter first
+            let displayName: string;
+            const cacheForTitle = itemFile ? this.app.metadataCache.getFileCache(itemFile) : null;
+            const titleFromYaml = cacheForTitle?.frontmatter?.title;
+
+            if (titleFromYaml) {
+                // Use title from YAML frontmatter
+                displayName = titleFromYaml;
+            } else {
+                // Fallback to existing logic (filename-based)
+                displayName = this.plugin.settings.showFolderNames
+                    ? res.path.replace('.md', '')
+                    : res.path.split('/').pop()?.replace('.md', '') ?? res.path;
+            }
 
             // --- Calculate Icon / Direction ---
             let iconName: string | null = null;
